@@ -203,18 +203,47 @@ public class TicTacToe {
      */
     private static boolean checkWin(char playerSymbol) {
         boolean result = false;
-
-        if(
-                map[0][0] == playerSymbol && map[0][1] == playerSymbol && map[0][2] == playerSymbol ||
-                map[1][0] == playerSymbol && map[1][1] == playerSymbol && map[1][2] == playerSymbol ||
-                map[2][0] == playerSymbol && map[2][1] == playerSymbol && map[2][2] == playerSymbol ||
-                map[0][0] == playerSymbol && map[1][0] == playerSymbol && map[2][0] == playerSymbol ||
-                map[0][1] == playerSymbol && map[1][1] == playerSymbol && map[2][1] == playerSymbol ||
-                map[0][2] == playerSymbol && map[1][2] == playerSymbol && map[2][2] == playerSymbol ||
-                map[0][0] == playerSymbol && map[1][1] == playerSymbol && map[2][2] == playerSymbol ||
-                map[2][0] == playerSymbol && map[1][1] == playerSymbol && map[0][2] == playerSymbol) {
+        if (checkDiagonals(playerSymbol) || checkLanes(playerSymbol))
             result = true;
-        }
+
         return result;
+    }
+
+    /**
+     * Проверка столбцов и строк на победу
+     * @param playerSymbol - текущий игрок
+     * @return boolean есть ли строка или столбец, полностью заполненная игроком
+     */
+    private static boolean checkLanes(char playerSymbol){
+        boolean rows, cols;
+        for (int i = 0; i < SIZE; i++) {
+            rows = true;
+            cols = true;
+            for (int j = 0; j < SIZE; j++) {
+                cols &= (map[i][j] == playerSymbol);
+                rows &= (map[j][i] == playerSymbol);
+            }
+            if (cols || rows)
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Проверка диагоналей на победу
+     * @param playerSymbol - текущий игрок
+     * @return boolean есть ли строка или столбец, полностью заполненная игроком
+     */
+    private static boolean checkDiagonals(char playerSymbol){
+        boolean right, left;
+        right = true;
+        left = true;
+        for (int i = 0; i < SIZE; i++) {
+            left &= (map[i][i] == playerSymbol);
+            right &= (map[SIZE - i - 1][i] == playerSymbol);
+        }
+        if (left || right)
+            return true;
+
+        return false;
     }
 }
