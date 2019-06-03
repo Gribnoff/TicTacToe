@@ -6,6 +6,7 @@ public class TicTacToe {
 
     private static char[][] map; //поле игры
     private static final int SIZE = 3; //размер поля
+    private static final boolean SILLY_MODE = true;
 
     private static final char CELL_EMPTY =  10242;
     private static final char CELL_X =  'X';
@@ -69,13 +70,26 @@ public class TicTacToe {
     }
 
     private static void computerTurn() {
-        int x = -1;
-        int y = -1;
+        int x;
+        int y;
 
-        do {
-            x = random.nextInt(SIZE);
-            y = random.nextInt(SIZE);
-        } while (!isCellValid(x, y));
+        if (SILLY_MODE) {
+            do {
+                x = random.nextInt(SIZE);
+                y = random.nextInt(SIZE);
+            } while (!isCellValid(x, y));
+        } else {
+            int cellRating;
+            for (int i = 0; i < SIZE; i++) {
+                for (int j = 0; j < SIZE; j++) {
+                    if (!isCellEmpty(x, y))
+                        continue;
+                    else {
+
+                    }
+                }
+            }
+        }
         System.out.printf("Компьтер ходит: %d %d\n", (y + 1), (x + 1));
         map[y][x] = CELL_O;
     }
@@ -85,7 +99,16 @@ public class TicTacToe {
 
         if (x < 0 || x >= SIZE || y < 0 || y >= SIZE)
             result = false;
-        else if (map[y][x] != CELL_EMPTY)
+        else if (!isCellEmpty(x, y))
+            result = false;
+
+        return result;
+    }
+
+    private static boolean isCellEmpty(int x, int y) {
+        boolean result = true;
+
+        if (map[y][x] != CELL_EMPTY)
             result = false;
 
         return result;
