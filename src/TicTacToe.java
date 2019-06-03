@@ -34,6 +34,9 @@ public class TicTacToe {
         System.out.println("Игра окончена");
     }
 
+    /**
+     * Инициализация поля
+     */
     private static void initMap() {
         map = new char[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++) {
@@ -43,6 +46,9 @@ public class TicTacToe {
         }
     }
 
+    /**
+     * Вывод поля на экран
+     */
     private static void printMap() {
         for (int i = 0; i < SIZE + 1; i++) {
             System.out.print(i + " ");
@@ -57,18 +63,24 @@ public class TicTacToe {
         System.out.println();
     }
 
+    /**
+     * Ход игрока
+     */
     private static void humanTurn() {
         int x, y;
 
         do{
             System.out.println("Введите координаты:");
-            y = scanner.nextInt() - 1;
-            x = scanner.nextInt() - 1;
+            y = scanner.nextInt() - 1; //координаты по вертикали
+            x = scanner.nextInt() - 1; //координаты по горизонтали
         } while(!isCellValid(x, y));
 
         map[y][x] = CELL_X;
     }
 
+    /**
+     * Ход компьютера
+     */
     private static void computerTurn() {
         int x;
         int y;
@@ -94,6 +106,12 @@ public class TicTacToe {
         map[y][x] = CELL_O;
     }
 
+    /**
+     * Проверка правильности хода
+     * @param x - координата по горизонтали
+     * @param y - координата по вертикали
+     * @return boolean валидность хода
+     */
     private static boolean isCellValid(int x, int y) {
         boolean result = true;
 
@@ -114,6 +132,11 @@ public class TicTacToe {
         return result;
     }
 
+    /**
+     * Проверка конца игры
+     * @param playerSymbol - текущий игрок
+     * @return boolean закончена ли игра
+     */
     private static boolean isEndGame(char playerSymbol) {
         boolean result = false;
 
@@ -132,6 +155,10 @@ public class TicTacToe {
         return result;
     }
 
+    /**
+     * Проверка заполненности поля
+     * @return boolean заполнено ли поле полностью
+     */
     private static boolean isMapFull() {
         boolean result = true;
 
@@ -145,6 +172,11 @@ public class TicTacToe {
         return result;
     }
 
+    /**
+     * Проверка победы
+     * @param playerSymbol - тещий игрок
+     * @return boolean есть ли победитель
+     */
     private static boolean checkWin(char playerSymbol) {
         boolean result = false;
 
