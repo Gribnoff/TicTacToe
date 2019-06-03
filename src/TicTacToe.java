@@ -91,13 +91,15 @@ public class TicTacToe {
                 y = random.nextInt(SIZE);
             } while (!isCellValid(x, y));
         } else {
-            int cellRating;
+            int[][] cellRatingMap = new int[SIZE][SIZE];
+            int bestMoveRating = -1;
             for (int i = 0; i < SIZE; i++) {
                 for (int j = 0; j < SIZE; j++) {
-                    if (!isCellEmpty(x, y))
-                        continue;
-                    else {
-
+                    int thisMoveRating = checkCellRating(i, j);
+                    if (bestMoveRating < thisMoveRating) {
+                        bestMoveRating = thisMoveRating;
+                        x = i;
+                        y = j;
                     }
                 }
             }
@@ -123,6 +125,28 @@ public class TicTacToe {
         return result;
     }
 
+    /**
+     * Проверка ценности клетки для ИИ
+     * @param x - координата по горизонтали
+     * @param y - координата по вертикали
+     * @return int количество соседних клеток, занятых компьютером
+     */
+    private static int checkCellRating(int x, int y) {
+        int result = -1; //у занятой клетки минимальный приоритет
+
+        if (isCellEmpty(x, y)) {
+
+        }
+
+        return result;
+    }
+
+    /**
+     * Проверка на пустоту клетки
+     * @param x - координата по горизонтали
+     * @param y - координата по вертикали
+     * @return boolean свободность клетки
+     */
     private static boolean isCellEmpty(int x, int y) {
         boolean result = true;
 
