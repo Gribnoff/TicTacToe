@@ -5,10 +5,11 @@ public class TicTacToe {
     //блок настроек игры
 
     private static char[][] map; //поле игры
-    private static final int SIZE = 3; //размер поля
+    private static int size; //размер поля
+    private static int winLine; //точек в ряд для победы
     private static final boolean SILLY_MODE = true;
 
-    private static final char CELL_EMPTY =  10242;
+    private static final char CELL_EMPTY =  '.';
     private static final char CELL_X =  'X';
     private static final char CELL_O =  'O';
 
@@ -16,6 +17,10 @@ public class TicTacToe {
     private static Random random = new Random();
 
     public static void main(String[] args) {
+        System.out.println("Введите размер поля");
+        size = scanner.nextInt();
+        System.out.println("Введите количество фишек в ряд для победы");
+        winLine = scanner.nextInt();
         initMap();
         printMap();
 
@@ -38,9 +43,9 @@ public class TicTacToe {
      * Инициализация поля
      */
     private static void initMap() {
-        map = new char[SIZE][SIZE];
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
+        map = new char[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 map[i][j] = CELL_EMPTY;
             }
         }
@@ -50,9 +55,9 @@ public class TicTacToe {
      * Вывод поля на экран
      */
     private static void printMap() {
-        for (int i = 0; i < SIZE + 1; i++) {
+        for (int i = 0; i < size + 1; i++) {
             System.out.print(i + " ");
-            for (int j = 0; j < SIZE; j++) {
+            for (int j = 0; j < size; j++) {
                 if (i == 0)
                     System.out.print((j + 1) + " ");
                 else
@@ -87,14 +92,14 @@ public class TicTacToe {
 
         if (SILLY_MODE) {
             do {
-                x = random.nextInt(SIZE);
-                y = random.nextInt(SIZE);
+                x = random.nextInt(size);
+                y = random.nextInt(size);
             } while (!isCellValid(x, y));
         } else {
-            int[][] cellRatingMap = new int[SIZE][SIZE];
+            int[][] cellRatingMap = new int[size][size];
             int bestMoveRating = -1;
-            for (int i = 0; i < SIZE; i++) {
-                for (int j = 0; j < SIZE; j++) {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
                     int thisMoveRating = checkCellRating(i, j);
                     if (bestMoveRating < thisMoveRating) {
                         bestMoveRating = thisMoveRating;
@@ -117,26 +122,10 @@ public class TicTacToe {
     private static boolean isCellValid(int x, int y) {
         boolean result = true;
 
-        if (x < 0 || x >= SIZE || y < 0 || y >= SIZE)
+        if (x < 0 || x >= size || y < 0 || y >= size)
             result = false;
         else if (!isCellEmpty(x, y))
             result = false;
-
-        return result;
-    }
-
-    /**
-     * Проверка ценности клетки для ИИ
-     * @param x - координата по горизонтали
-     * @param y - координата по вертикали
-     * @return int количество соседних клеток, занятых компьютером
-     */
-    private static int checkCellRating(int x, int y) {
-        int result = -1; //у занятой клетки минимальный приоритет
-
-        if (isCellEmpty(x, y)) {
-
-        }
 
         return result;
     }
@@ -186,8 +175,8 @@ public class TicTacToe {
     private static boolean isMapFull() {
         boolean result = true;
 
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 if (map[i][j] != CELL_EMPTY)
                     result = false;
             }
@@ -202,11 +191,14 @@ public class TicTacToe {
      * @return boolean есть ли победитель
      */
     private static boolean checkWin(char playerSymbol) {
-        boolean result = false;
-        if (checkDiagonals(playerSymbol) || checkLanes(playerSymbol))
-            result = true;
+        for (int i = 0; i < size - winLine + 1; i++) {
+            for (int j = 0; j < size - winLine + 1; j++) {
+                if (checkDiagonals(playerSymbol, j, i) || checkLanes(playerSymbol, j, i))
+                    return true;
+            }
+        }
 
-        return result;
+        return false;
     }
 
     /**
@@ -214,12 +206,12 @@ public class TicTacToe {
      * @param playerSymbol - текущий игрок
      * @return boolean есть ли строка или столбец, полностью заполненная игроком
      */
-    private static boolean checkLanes(char playerSymbol){
+    private static boolean checkLanes(char playerSymbol, int offsetX, int offsetY){
         boolean rows, cols;
-        for (int i = 0; i < SIZE; i++) {
+        for (int i = offsetY; i < winLine + offsetY; i++) {
             rows = true;
             cols = true;
-            for (int j = 0; j < SIZE; j++) {
+            for (int j = offsetX; j < winLine + offsetX; j++) {
                 cols &= (map[i][j] == playerSymbol);
                 rows &= (map[j][i] == playerSymbol);
             }
@@ -233,13 +225,13 @@ public class TicTacToe {
      * @param playerSymbol - текущий игрок
      * @return boolean есть ли строка или столбец, полностью заполненная игроком
      */
-    private static boolean checkDiagonals(char playerSymbol){
+    private static boolean checkDiagonals(char playerSymbol, int offsetX, int offsetY){
         boolean right, left;
         right = true;
         left = true;
-        for (int i = 0; i < SIZE; i++) {
-            left &= (map[i][i] == playerSymbol);
-            right &= (map[SIZE - i - 1][i] == playerSymbol);
+        for (int i = 0; i < winLine; i++) {
+            left &= (map[i + offsetY][i + offsetX] == playerSymbol);
+            right &= (map[winLine - i - 1 + offsetY][i + offsetX] == playerSymbol);
         }
         if (left || right)
             return true;
