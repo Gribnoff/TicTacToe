@@ -1,26 +1,49 @@
 import java.util.Random;
 import java.util.Scanner;
 
-public class TicTacToe {
+class TicTacToe {
     //блок настроек игры
 
     private static char[][] map; //поле игры
     private static int size; //размер поля
     private static int winLine; //точек в ряд для победы
-    private static final boolean SILLY_MODE = true;
+    private static boolean sillyMode; //сложность
 
     private static final char CELL_EMPTY =  '.';
     private static final char CELL_X =  'X';
     private static final char CELL_O =  'O';
 
     private static Scanner scanner = new Scanner(System.in);
-    private static Random random = new Random();
+    private static Random random = new Random(System.currentTimeMillis());
 
     public static void main(String[] args) {
-        System.out.println("Введите размер поля");
-        size = scanner.nextInt();
-        System.out.println("Введите количество фишек в ряд для победы");
-        winLine = scanner.nextInt();
+        String mode;
+        do {
+            System.out.println("Играем с \"умным\" компьютером? y/n");
+            mode = scanner.nextLine().toLowerCase();
+            if ("y".equals(mode))
+                sillyMode = false;
+            else if ("n".equals(mode))
+                sillyMode = true;
+        } while (!"y".equals(mode) && !"n".equals(mode));
+
+        do {
+            System.out.println("Введите размер поля(не меньше 3)");
+            while (!scanner.hasNextInt()) {
+                System.out.println("Это не число!");
+                scanner.nextLine();
+            }
+            size = scanner.nextInt();
+        } while (size < 3);
+
+        do {
+            System.out.printf("Введите количество фишек в ряд для победы(от 3 до %d)\n", size);
+            while (!scanner.hasNextInt()) {
+                System.out.println("Это не число!");
+                scanner.nextLine();
+            }
+            winLine = scanner.nextInt();
+        } while (winLine > size || winLine < 3);
         initMap();
         printMap();
 
@@ -72,12 +95,18 @@ public class TicTacToe {
      * Ход игрока
      */
     private static void humanTurn() {
-        int x, y;
+        int x = -1;
+        int y = -1;
 
         do{
             System.out.println("Введите координаты:");
-            y = scanner.nextInt() - 1; //координаты по вертикали
-            x = scanner.nextInt() - 1; //координаты по горизонтали
+            if (scanner.hasNextInt())
+                y = scanner.nextInt() - 1; //координаты по вертикали
+            else
+                scanner.nextLine();
+            if (scanner.hasNextInt())
+                x = scanner.nextInt() - 1; //координаты по горизонтали
+            else scanner.nextLine();
         } while(!isCellValid(x, y));
 
         map[y][x] = CELL_X;
@@ -87,30 +116,73 @@ public class TicTacToe {
      * Ход компьютера
      */
     private static void computerTurn() {
-        int x;
-        int y;
+        int x = -1;
+        int y = -1;
 
-        if (SILLY_MODE) {
+        if (sillyMode) {
             do {
                 x = random.nextInt(size);
                 y = random.nextInt(size);
             } while (!isCellValid(x, y));
         } else {
-            int[][] cellRatingMap = new int[size][size];
-            int bestMoveRating = -1;
+            int[][] cellRatingMap = createCellRatingMap();
+            int bestMoveRating = Integer.MIN_VALUE;
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
-                    int thisMoveRating = checkCellRating(i, j);
-                    if (bestMoveRating < thisMoveRating) {
-                        bestMoveRating = thisMoveRating;
-                        x = i;
-                        y = j;
+                    if (bestMoveRating < cellRatingMap[j][i]) {
+                        bestMoveRating = cellRatingMap[j][i];
+                        x = j;
+                        y = i;
                     }
                 }
             }
         }
         System.out.printf("Компьтер ходит: %d %d\n", (y + 1), (x + 1));
         map[y][x] = CELL_O;
+    }
+
+    /**
+     * Создаёт карту с ценностью клеток для выбора хода компьютера
+     * @return int[][] карту приоритетности ходов
+     */
+    private static int[][] createCellRatingMap() {
+        int[][] result = new int[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result[i][j] = countCellRating(i, j);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Подсчёт ценности клетки
+     * @param x - координата по горизонтали
+     * @param y - координата по вертикали
+     * @return int вероятность хода компьютера на эту клетку
+     */
+    private static int countCellRating(int x, int y) {
+        if (map[y][x] != CELL_EMPTY)
+            return Integer.MIN_VALUE;
+
+        int result = 0;
+
+        for (int i = -1; i <= 1; i++) {
+            if (x + i >= 0 && x + i < size && y + i >= 0 && y + i < size) {
+                if (map[y + i][x + i] == CELL_O)
+                    result++;
+            }
+            if (x + i >= 0 && x + i < size) {
+                if (map[y][x + i] == CELL_O)
+                    result++;
+            }
+            if (y + i >= 0 && y + i < size) {
+                if (map[y + i][x] == CELL_O)
+                    result++;
+            }
+        }
+        return result;
     }
 
     /**
@@ -158,9 +230,7 @@ public class TicTacToe {
         if (checkWin(playerSymbol)) {
             System.out.println("Победили " + playerSymbol);
             result = true;
-        }
-
-        if (isMapFull()) {
+        } else if (isMapFull()) {
             System.out.println("Ничья");
             result = true;
         }
@@ -173,16 +243,15 @@ public class TicTacToe {
      * @return boolean заполнено ли поле полностью
      */
     private static boolean isMapFull() {
-        boolean result = true;
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if (map[i][j] != CELL_EMPTY)
-                    result = false;
+                if (map[i][j] == CELL_EMPTY)
+                    return false;
             }
         }
 
-        return result;
+        return true;
     }
 
     /**
@@ -204,6 +273,8 @@ public class TicTacToe {
     /**
      * Проверка столбцов и строк на победу
      * @param playerSymbol - текущий игрок
+     * @param offsetX - сдвиг по горизонтали
+     * @param offsetY - сдвиг по вертикали
      * @return boolean есть ли строка или столбец, полностью заполненная игроком
      */
     private static boolean checkLanes(char playerSymbol, int offsetX, int offsetY){
@@ -223,6 +294,8 @@ public class TicTacToe {
     /**
      * Проверка диагоналей на победу
      * @param playerSymbol - текущий игрок
+     * @param offsetX - сдвиг по горизонтали
+     * @param offsetY - сдвиг по вертикали
      * @return boolean есть ли строка или столбец, полностью заполненная игроком
      */
     private static boolean checkDiagonals(char playerSymbol, int offsetX, int offsetY){
@@ -233,9 +306,6 @@ public class TicTacToe {
             left &= (map[i + offsetY][i + offsetX] == playerSymbol);
             right &= (map[winLine - i - 1 + offsetY][i + offsetX] == playerSymbol);
         }
-        if (left || right)
-            return true;
-
-        return false;
+        return left || right;
     }
 }
